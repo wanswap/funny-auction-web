@@ -307,7 +307,7 @@ const GameRuleModal = (props) => {
       <ModalH2>{intl.messages['gameRule7']}</ModalH2>
       <ModalH2>{intl.messages['gameRule8']}</ModalH2>
       <ModalH2>{intl.messages['gameRule9']}</ModalH2>
-      <a href="https://github.com/lolieatapple/funny-auction" style={{ marginLeft: "20px" }}>Github</a>
+      <a href="https://github.com/wanswap" style={{ marginLeft: "20px" }}>Github</a>
 
       <MainButton onClick={props.onCancel} style={{ marginTop: "40px" }}>{intl.messages['ok']}</MainButton>
     </StyledModal>
