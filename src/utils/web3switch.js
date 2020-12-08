@@ -6,7 +6,6 @@ let nodeUrlsTestnet = [
     // 'https://cat.molin.tech:48545',
     'https://gwan-ssl.wandevs.org:46891',
     'https://demodex.wandevs.org:48545',
-    'https://molin.tech:1443'
 ];
 
 let nodeUrlsMainnet = [

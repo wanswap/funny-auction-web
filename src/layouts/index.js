@@ -30,17 +30,21 @@ function BasicLayout(props) {
     func();
   }, []);
 
+  const address = props.selectedAccount ? props.selectedAccount.get('address') : undefined;
+
   useEffect(() => {
     if (!props.networkId) {
       return;
     }
-
     let timer;
     const getInfo = async () => {
-      let ret = await multicall.getFunnyAuctionInfo(getNodeUrl(), props.networkId, props.selectedAccount ? props.selectedAccount.get('address') : undefined);
-      setBlockNumber(Number(ret.results.blockNumber.toString()));
-      setInfo(ret.results.transformed);
-      timer = setTimeout(getInfo, 5000);
+      let ret = await multicall.getFunnyAuctionInfo(getNodeUrl(), props.networkId, props.selectedAccount ? address : undefined);
+      if (ret) {
+        setBlockNumber(Number(ret.results.blockNumber.toString()));
+        setInfo(ret.results.transformed);
+        setFinalBlock(ret.results.blockNumber - ret.results.transformed.lastOfferBlock);
+      }
+      timer = setTimeout(getInfo, 10000);
     }
 
     getInfo();
@@ -50,77 +54,68 @@ function BasicLayout(props) {
         clearInterval(timer);
       }
     }
-  }, [props.networkId, props.selectedAccount]);
-
-  const balance = useCallback(() => {
-    if (!props.selectedAccount) {
-      return "0";
-    }
-    return Number(Web3.utils.fromWei(props.selectedAccount.get('balance').toFixed(0))).toFixed(0);
-  }, [props.selectedAccount]);
+  }, [props.networkId, address]);
 
   let rank = [
     {
       rank: 1,
       address: '0x4Cf0...7D9e',
-      status: 'Winner',
-      pay: '15 WAN',
-      return: '85 WAN',
+      pay: '15 WASP',
+      return: '100 WAN',
     },
     {
       rank: 2,
       address: '0x4Cf0...7D9e',
-      status: 'Loser',
-      pay: '14 WAN',
-      return: '0 WAN',
+      pay: '14 WASP',
+      return: '14 WASP',
     },
     {
       rank: 3,
       address: '0x4Cf0...7D9e',
-      status: '',
-      pay: '10 WAN',
-      return: '10 WAN',
+      pay: '10 WASP',
+      return: '10 WASP',
     },
     {
       rank: 4,
       address: '0x4Cf0...7D9e',
-      status: '',
-      pay: '8 WAN',
-      return: '8 WAN',
+      pay: '8 WASP',
+      return: '8 WASP',
     },
   ];
 
   rank = !info ? [] : info.players.map((v, i) => {
     return {
-      address: v,
-      pay: info.bids[i] / 10 ** 18,
+      address: v.slice(0, 6) + '...' + v.slice(-4),
+      pay: info.bids[i],
     }
   });
 
   rank = rank.sort((a, b) => {
-    return a.pay - b.pay;
+    return b.pay - a.pay;
   });
 
   rank = rank.map((v, i) => {
-    const status = i === 0 ? 'Winner' : (i === 1 ? 'Loser' : '--');
-    const returns = i === 0 ? (info.goodsValue - v.pay) : (i === 1 ? (0) : v.pay);
+    const returns = i === 0 ? (info.goodsValue) : v.pay;
     return {
       ...v,
       rank: i + 1,
-      status,
-      return: returns + ' WAN'
+      return: returns + ((i === 0) ? ' WAN' : ' WASP')
     }
   });
 
-  const [showLiquidity, setShowLiquidity] = useState(false);
-  const [showDeposit, setShowDeposit] = useState(false);
-  const [showWithdraw, setShowWithdraw] = useState(false);
-  const [showGameRule, setShowGameRule] = useState(true);
+  const [showGameRule, setShowGameRule] = useState(false);
   const [showAssets, setShowAssets] = useState(false);
   const [showBid, setShowBid] = useState(false);
   const [showPayConfirm, setShowPayConfirm] = useState(false);
-  const [bidValue, setBidValue] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [addValue, setAddValue] = useState(0);
+  const [finalBlock, setFinalBlock] = useState(0);
+  const active = info && info.goodsValue && info.goodsValue > 0 ? true : false;
+  const totalAsset = info && (Number(info.waspBalance) + info.asset + info.bid);
+  const currentPrice = info && info.status === 0 ? 0 : info && info.currentBidPrice;
+  const bid = info && info.status === 0 ? 0 : info && info.bid;
+  const status = info && info.status;
+  console.log('status', status);
+  console.log('currentPrice', currentPrice, status !== 2 && info && info.currentBidPrice > 0);
 
   return (
     <Ground>
@@ -129,74 +124,46 @@ function BasicLayout(props) {
           ? <Wallet title="WanSwap" nodeUrl={rpc} />
           : null
       }
-      <LiquidityModal visible={showLiquidity}
-        totalLiquidity={info ? info.liquidityPool : 0}
-        totalSupply={info ? info.totalSupply : 0}
-        myLiquidity={info ? (info.myLiquidity ? info.myLiquidity : 0) : 0}
-        onCancel={() => { setShowLiquidity(false) }}
-        onDeposit={(value) => {
-          setShowLiquidity(false);
-          setShowDeposit(true);
-        }}
-        onWithdraw={() => {
-          setShowLiquidity(false);
-          setShowWithdraw(true);
-        }} />
-      <InputModal visible={showDeposit}
-        onOk={(value) => {
-          setLoading(true);
-          sc.addLiquidity(value, undefined, props.selectedWallet, props.networkId).then((ret) => {
-            message.success('Tx is sent: ' + ret)
-            setShowDeposit(false);
-          }).catch(ret => {
-            message.error('Failed: ' + ret);
-          }).finally(() => {
-            setLoading(false);
-          });
-        }}
-        onCancel={() => { setShowDeposit(false); }}
-        loading={loading}
-        title={intl.messages['depositLiquidity']}
-        text={intl.messages['depositAmount']}
-        symbol="WAN"
-      />
-      <InputModal visible={showWithdraw}
-        withdraw={true}
-        onOk={() => {
-          setLoading(true);
-          sc.withdraw(props.selectedWallet, props.networkId).then((ret) => {
-            message.success('Tx is sent: ' + ret)
-            setShowWithdraw(false);
-          }).catch(ret => {
-            message.error('Failed: ' + ret);
-          }).finally(() => {
-            setLoading(false);
-          });
-        }}
-        onCancel={() => { setShowWithdraw(false); }}
-        title={intl.messages['withdrawLiquidity']}
-        text={intl.messages['withdrawAmount']}
-        symbol="FAP"
-      />
       <GameRuleModal visible={showGameRule} onCancel={() => { setShowGameRule(false) }} />
-      <AssetsModal visible={showAssets} onCancel={() => { setShowAssets(false) }} balance={balance} />
-      <BidModal visible={showBid} onCancel={() => { setShowBid(false) }} onOk={(value) => {
-        setBidValue(value);
-        setShowBid(false);
-        setShowPayConfirm(true);
-      }} />
-      <PayConfirmModal visible={showPayConfirm} onCancel={() => { setShowPayConfirm(false) }} bidValue={bidValue} />
+      <AssetsModal visible={showAssets} onCancel={() => { setShowAssets(false) }} waspBalance={info && info.waspBalance} asset={info && info.asset} bid={info && info.bid} />
+      <BidModal visible={showBid}
+        currentPrice={currentPrice}
+        onCancel={() => { setShowBid(false) }} onOk={(value) => {
+          setAddValue(value);
+          setShowBid(false);
+          setShowPayConfirm(true);
+        }} />
+      <PayConfirmModal visible={showPayConfirm}
+        onCancel={() => { setShowPayConfirm(false) }}
+        addValue={addValue} waspBalance={info && info.waspBalance}
+        asset={info && info.asset} bid={bid} currentBidPrice={currentPrice}
+        chainId={props.networkId}
+        wallet={props.selectedWallet}
+        account={props.selectedAccount ? props.selectedAccount.get('address') : undefined} />
       <TopBar>
         <Logo>
           🏵
         </Logo>
         <Tab to="/" selected>{intl.messages['funnyAuction']}</Tab>
-        <Tab to="/" onClick={() => { setShowLiquidity(true) }}>{intl.messages['liquidity']}</Tab>
+        {
+          status !== 2 && info && info.currentBidPrice > 0
+            ? <Tab to="/" onClick={() => {
+              sc.settlement(props.selectedWallet, props.networkId).then((ret) => {
+                console.log('ret', ret);
+                message.success("Tx sent: " + ret);
+              }).catch(err => {
+                console.log('err', err);
+                message.error(err);
+              })
+            }} >{intl.messages['settlement']}</Tab>
+            : null
+        }
+
         <Tab to="/" onClick={() => { setShowGameRule(true) }}>{intl.messages['gameRules']}</Tab>
         {
           rpc
             ? <>
-              <Assets onClick={() => { setShowAssets(true) }}>{intl.messages['myAssets'] + ': ' + balance() + ' WAN'}</Assets>
+              <Assets onClick={() => { setShowAssets(true) }}>{intl.messages['myAssets'] + ': ' + totalAsset + ' WASP'}</Assets>
               <WalletBt><WalletButton /></WalletBt>
             </>
             : null
@@ -208,27 +175,92 @@ function BasicLayout(props) {
         <p style={{ fontSize: "58px" }}>100</p>
         <p style={{ fontSize: "20px" }}>Wan Coins</p>
       </Circle>
-      <SmallTitle>{intl.messages['currentPrice'] + (info ? info.currentBidPrice : 0) + " WAN"}</SmallTitle>
-      <MainButton onClick={() => { setShowBid(true) }}>{intl.messages['startGame']}</MainButton>
-      <Title>{intl.messages['lastRoundRank']}</Title>
-      <Header>
-        <Cell>{intl.messages['rank']}</Cell>
-        <Cell long>{intl.messages['address']}</Cell>
-        <Cell>{intl.messages['status']}</Cell>
-        <Cell>{intl.messages['pay']}</Cell>
-        <Cell>{intl.messages['return']}</Cell>
-      </Header>
+      <SmallTitle>{
+        info && info.status !== 0
+          ? intl.messages['currentPrice'] + (info ? info.currentBidPrice : 0) + " WASP"
+          : null
+      }</SmallTitle>
+      <MainButton disable={!active || status === 1} onClick={() => { active && status !== 1 ? setShowBid(true) : null }}>
+        {
+          active
+            ? (
+              status === 0
+                ? intl.messages['startGame']
+                : null
+            )
+            : null
+        }
+        {
+          active
+            ? (
+              status === 1
+                ? intl.messages['gameOver']
+                : null
+            )
+            : null
+        }
+        {
+          active
+            ? (
+              status === 2
+                ? intl.messages['addBid']
+                : null
+            )
+            : null
+        }
+        {
+          !active
+            ? intl.messages['liquidityEmpty']
+            : null
+        }
+      </MainButton>
+      <SmallTitle>
+        {
+          info && info.status === 2
+            ? intl.messages['timeLeft'] + ' ' + finalBlock + " / " + info.confirmBlock + " blocks"
+            : null
+        }
+        {
+          info && info.status === 1
+            ? intl.messages['coldDown'] + ' ' + (finalBlock - info.confirmBlock) + " / " + info.coldDownBlock + " blocks"
+            : null
+        }
+        {
+          info && info.status === 0
+            ? intl.messages['gameOver']
+            : null
+        }
+      </SmallTitle>
       {
-        rank.map((v, i) => {
-          return (<TableRow key={i}>
-            <Cell>{v.rank}</Cell>
-            <Cell long>{v.address}</Cell>
-            <Cell>{v.status}</Cell>
-            <Cell>{v.pay}</Cell>
-            <Cell>{v.return}</Cell>
-          </TableRow>);
-        })
+        rank.length > 0
+          ? <>
+            <Title>
+              {
+                status === 2
+                  ? intl.messages['currentRank']
+                  : intl.messages['lastRoundRank']
+              }
+            </Title>
+            <Header>
+              <Cell>{intl.messages['rank']}</Cell>
+              <Cell long>{intl.messages['address']}</Cell>
+              <Cell long>{intl.messages['pay']}</Cell>
+              <Cell long>{intl.messages['return']}</Cell>
+            </Header>
+            {
+              rank.map((v, i) => {
+                return (<TableRow key={i}>
+                  <Cell>{v.rank}</Cell>
+                  <Cell long>{v.address}</Cell>
+                  <Cell long>{v.pay + ' WASP'}</Cell>
+                  <Cell long>{v.return}</Cell>
+                </TableRow>);
+              })
+            }
+          </>
+          : null
       }
+
       <BlockNumber>🔵{' ' + blockNumber}</BlockNumber>
     </Ground>
   );
@@ -243,51 +275,6 @@ export default withRouter(connect(state => {
     selectedAccountID,
   }
 })(BasicLayout));
-
-const LiquidityModal = (props) => {
-  const intl = useIntl();
-
-  return (
-    <StyledModal
-      visible={props.visible}
-      onCancel={props.onCancel}
-      footer={null}
-    >
-      <ModalTitle>{intl.messages['liquidity']}</ModalTitle>
-      <ModalH1>{intl.messages['totalLiquidity']}:</ModalH1>
-      <BigLabel>{props.totalLiquidity.toFixed(0)} WAN</BigLabel>
-      <ModalH1>{intl.messages['myLiquidity']}:</ModalH1>
-      <SmallLabel>{props.myLiquidity} FAP / {props.myLiquidity > 0 ? Number((props.myLiquidity * 100 / props.totalSupply).toFixed(2)) : 0}% / {props.myLiquidity > 0 ? (props.myLiquidity / props.totalSupply * props.totalLiquidity).toFixed(0) : 0} WAN</SmallLabel>
-      <MainButton onClick={props.onDeposit}>{intl.messages['deposit']}</MainButton>
-      <MainButton onClick={props.onWithdraw}>{intl.messages['withdraw']}</MainButton>
-    </StyledModal>
-  );
-}
-
-const InputModal = (props) => {
-  const intl = useIntl();
-  const [amount, setAmount] = useState();
-  return (
-    <StyledModal
-      visible={props.visible}
-      onCancel={props.onCancel}
-      footer={null}
-    >
-      <ModalTitle>{props.title}</ModalTitle>
-      {
-        !props.withdraw
-          ? <>
-            <ModalH1>{props.text}:</ModalH1>
-            <StyledInput suffix={props.symbol} value={amount} placeholder={'Input Amount Here'} onChange={(e) => { setAmount(e.target.value) }} />
-          </>
-          : null
-      }
-
-      <MainButton onClick={() => { props.onOk(amount) }}>{intl.messages['ok']}</MainButton>
-      <MainButton onClick={props.onCancel}>{intl.messages['cancel']}</MainButton>
-    </StyledModal>
-  );
-}
 
 const GameRuleModal = (props) => {
   const intl = useIntl();
@@ -305,8 +292,6 @@ const GameRuleModal = (props) => {
       <ModalH2>{intl.messages['gameRule5']}</ModalH2>
       <ModalH2>{intl.messages['gameRule6']}</ModalH2>
       <ModalH2>{intl.messages['gameRule7']}</ModalH2>
-      <ModalH2>{intl.messages['gameRule8']}</ModalH2>
-      <ModalH2>{intl.messages['gameRule9']}</ModalH2>
       <a href="https://github.com/wanswap" style={{ marginLeft: "20px" }}>Github</a>
 
       <MainButton onClick={props.onCancel} style={{ marginTop: "40px" }}>{intl.messages['ok']}</MainButton>
@@ -324,25 +309,25 @@ const AssetsModal = (props) => {
     >
       <ModalTitle>{intl.messages['myAssets']}</ModalTitle>
       <InALine>
-        <SuperBigLabel>125</SuperBigLabel>
-        <TextInside>WAN</TextInside>
+        <SuperBigLabel>{Number(props.waspBalance) + props.asset + props.bid}</SuperBigLabel>
+        <TextInside>WASP</TextInside>
       </InALine>
       <GridField>
         <Row gutter={[24, 24]}>
           <Col span={8}>{intl.messages['walletBalance']}</Col>
-          <Col span={10}>{props.balance()} WAN</Col>
+          <Col span={10}>{props.waspBalance} WASP</Col>
           <Col span={6}></Col>
         </Row>
         <Row gutter={[24, 24]}>
           <Col span={8}>{intl.messages['claimable']}</Col>
-          <Col span={10}>15 WAN</Col>
+          <Col span={10}>{props.asset} WASP</Col>
           <Col span={6}>
             <SmallButton>{intl.messages['claim']}</SmallButton>
           </Col>
         </Row>
         <Row gutter={[24, 24]}>
           <Col span={8}>{intl.messages['lockedBalance']}</Col>
-          <Col span={10}>20 WAN</Col>
+          <Col span={10}>{props.bid} WASP</Col>
           <Col span={6}>
             <Tooltip title={intl.messages['lockedTooltip']}>
               <QuestionCircleOutlined />
@@ -365,18 +350,18 @@ const BidModal = (props) => {
       onCancel={props.onCancel}
       footer={null}
     >
-      <ModalTitle>{intl.messages['myAssets']}</ModalTitle>
-      <SmallTitle>{intl.messages['currentPrice'] + "0 WAN"}</SmallTitle>
+      <ModalTitle>{intl.messages['auctionBidFor']}</ModalTitle>
+      <SmallTitle>{intl.messages['currentPrice'] + props.currentPrice + " WASP"}</SmallTitle>
       <GridField>
         <Row gutter={[24, 24]}>
           <Col span={4}>{intl.messages['bid']}</Col>
-          <Col span={8}><SmallButton selected={select === "1"} onClick={() => { setSelect('1'); setValue(1); }}>+1 WAN</SmallButton></Col>
-          <Col span={8}><SmallButton selected={select === "2"} onClick={() => { setSelect('2'); setValue(2); }}>+2 WAN</SmallButton></Col>
+          <Col span={8}><SmallButton selected={select === "1"} onClick={() => { setSelect('1'); setValue(1); }}>+1 WASP</SmallButton></Col>
+          <Col span={8}><SmallButton selected={select === "2"} onClick={() => { setSelect('2'); setValue(2); }}>+2 WASP</SmallButton></Col>
         </Row>
         <Row gutter={[24, 24]}>
           <Col span={4}></Col>
-          <Col span={8}><SmallButton selected={select === "5"} onClick={() => { setSelect('5'); setValue(5); }}>+5 WAN</SmallButton></Col>
-          <Col span={8}><SmallButton selected={select === "10"} onClick={() => { setSelect('10'); setValue(10); }}>+10 WAN</SmallButton></Col>
+          <Col span={8}><SmallButton selected={select === "5"} onClick={() => { setSelect('5'); setValue(5); }}>+5 WASP</SmallButton></Col>
+          <Col span={8}><SmallButton selected={select === "10"} onClick={() => { setSelect('10'); setValue(10); }}>+10 WASP</SmallButton></Col>
         </Row>
         <Row gutter={[24, 24]}>
           <Col span={4}></Col>
@@ -384,7 +369,7 @@ const BidModal = (props) => {
           <Col span={8}>
             {
               select === "custom"
-                ? <SmallInput suffix={'WAN'} onChange={(e) => {
+                ? <SmallInput suffix={'WASP'} onChange={(e) => {
                   const v = e.target.value;
                   if (isNaN(v) || v < 0) {
                     return;
@@ -407,7 +392,13 @@ const BidModal = (props) => {
 
 const PayConfirmModal = (props) => {
   const intl = useIntl();
-  // console.log('bidValue', props.bidValue);
+  let asset = Number(props.asset);
+  let bid = Number(props.bid);
+  let add = Number(props.currentBidPrice) + Number(props.addValue) - bid;
+  if (asset >= add) {
+    asset = add;
+  }
+
   return (
     <StyledModal
       visible={props.visible}
@@ -418,12 +409,12 @@ const PayConfirmModal = (props) => {
       <GridField>
         <Row gutter={[24, 24]}>
           <Col span={10}>{intl.messages['bid']}</Col>
-          <Col span={8}>100 WAN</Col>
+          <Col span={8}>{bid + add} WASP</Col>
           <Col span={6}></Col>
         </Row>
         <Row gutter={[24, 24]}>
           <Col span={10}>{intl.messages['payFromClaimable']}</Col>
-          <Col span={8}>15 WAN</Col>
+          <Col span={8}>{asset} WASP</Col>
           <Col span={6}>
             <Tooltip title={intl.messages['payFromHelp1']}>
               <QuestionCircleOutlined />
@@ -432,7 +423,7 @@ const PayConfirmModal = (props) => {
         </Row>
         <Row gutter={[24, 24]}>
           <Col span={10}>{intl.messages['payFromWallet']}</Col>
-          <Col span={8}>20 WAN</Col>
+          <Col span={8}>{add > asset ? (add - asset) : 0} WASP</Col>
           <Col span={6}>
             <Tooltip title={intl.messages['payFromHelp2']}>
               <QuestionCircleOutlined />
@@ -440,7 +431,26 @@ const PayConfirmModal = (props) => {
           </Col>
         </Row>
       </GridField>
-      <MainButton onClick={props.onCancel} style={{ marginTop: "40px" }}>{intl.messages['ok']}</MainButton>
+      <MainButton onClick={() => {
+        if (!props.account) {
+          message.info("Please select wallet first");
+          return;
+        }
+        sc.approve(props.wallet, props.chainId, props.account).then((ret) => {
+          sc.offer(props.wallet, props.chainId, Number(props.currentBidPrice) + Number(props.addValue)).then((ret) => {
+            console.log('ret', ret);
+            message.success("Tx sent: " + ret);
+            props.onCancel();
+          }).catch(err => {
+            console.log('err', err);
+            message.error(err);
+            props.onCancel();
+          })
+        }).catch(err => {
+          console.log(err);
+          message.error(err);
+        });
+      }} style={{ marginTop: "40px" }}>{intl.messages['ok']}</MainButton>
       <MainButton onClick={props.onCancel} style={{ marginTop: "40px" }}>{intl.messages['cancel']}</MainButton>
     </StyledModal>
   );
@@ -594,7 +604,7 @@ const SmallTitle = styled.div`
   margin-left: auto;
   margin-right: auto;
   text-align: center;
-  width: 200px;
+  width: 300px;
   margin-top: 20px;
 `;
 
@@ -613,7 +623,7 @@ const MainButton = styled.div`
   width: 200px;
   margin-top: 0px;
   box-shadow: 0px 3px 10px #0000002f;
-  cursor: pointer;
+  cursor: ${props => props.disable ? "not-allowed" : "pointer"};
   :hover{
     background-color: #eeffff;
     box-shadow: 0px 3px 10px #ffff338f;

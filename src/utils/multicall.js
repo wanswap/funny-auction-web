@@ -6,7 +6,10 @@ export async function getFunnyAuctionInfo(rpc, chainId, account) {
     return undefined;
   }
 
+  console.debug('chainId', chainId);
+
   const funnySc = scAddr.FUNNY_AUCTION_ADDR[Number(chainId).toString()];
+  const waspToken = scAddr.WASP_ADDR[Number(chainId).toString()];
   const config = {
     rpcUrl: rpc,
     multicallAddress: scAddr.MULTI_CALL_ADDR[Number(chainId).toString()]
@@ -25,28 +28,8 @@ export async function getFunnyAuctionInfo(rpc, chainId, account) {
     },
     {
       target: funnySc,
-      call: ['percent()(uint256)'],
-      returns: [['percent', val => Number(val)]]
-    },
-    {
-      target: funnySc,
-      call: ['calcGoodsValue()(uint)'],
-      returns: [['calcGoodsValue', val => val / 10 ** 18]]
-    },
-    {
-      target: funnySc,
       call: ['getPlayersInfo()(address[], uint256[])'],
       returns: [['players'], ['bids', val => val.map(v => v / 10 ** 18)]]
-    },
-    {
-      target: funnySc,
-      call: ['liquidityPool()(uint256)'],
-      returns: [['liquidityPool', val => val / 10 ** 18]]
-    },
-    {
-      target: funnySc,
-      call: ['totalSupply()(uint256)'],
-      returns: [['totalSupply', val => val / 10 ** 18]]
     },
     {
       target: funnySc,
@@ -57,16 +40,6 @@ export async function getFunnyAuctionInfo(rpc, chainId, account) {
       target: funnySc,
       call: ['currentBidPrice()(uint256)'],
       returns: [['currentBidPrice', val => val / 10 ** 18]]
-    },
-    {
-      target: funnySc,
-      call: ['topPlayer()(address)'],
-      returns: [['topPlayer']]
-    },
-    {
-      target: funnySc,
-      call: ['secondPlayer()(address)'],
-      returns: [['secondPlayer']]
     },
     {
       target: funnySc,
@@ -82,13 +55,27 @@ export async function getFunnyAuctionInfo(rpc, chainId, account) {
 
   if (account) {
     calls.push({
-      target: funnySc,
+      target: waspToken,
       call: ['balanceOf(address)(uint256)', account],
-      returns: [['myLiquidity', val => val / 10 ** 18]]
-    })
+      returns: [['waspBalance', val => (val / 10 ** 18 - 0.5).toFixed(0)]]
+    });
+    calls.push({
+      target: funnySc,
+      call: ['assetMap(address)(uint256)', account],
+      returns: [['asset', val => val / 10 ** 18]]
+    });
+    calls.push({
+      target: funnySc,
+      call: ['bidMap(address)(uint256)', account],
+      returns: [['bid', val => val / 10 ** 18]]
+    });
   }
 
-  let ret = await aggregate(calls, config);
-  console.debug('sc info', ret);
-  return ret;
+  try {
+    let ret = await aggregate(calls, config);
+    console.debug('sc info', ret);
+    return ret;
+  } catch (error) {
+    console.log('error', error);
+  }
 }
