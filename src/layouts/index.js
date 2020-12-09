@@ -366,7 +366,7 @@ const BidModal = (props) => {
       <SmallTitle>{intl.messages['currentPrice'] + props.currentPrice + " WASP"}</SmallTitle>
       <GridField>
         <Row gutter={[24, 24]}>
-          <Col span={4}>{intl.messages['bid']}</Col>
+          <Col span={4}>{intl.messages['addBid']}</Col>
           <Col span={8}><SmallButton selected={select === "1"} onClick={() => { setSelect('1'); setValue(1); }}>+1 WASP</SmallButton></Col>
           <Col span={8}><SmallButton selected={select === "2"} onClick={() => { setSelect('2'); setValue(2); }}>+2 WASP</SmallButton></Col>
         </Row>
