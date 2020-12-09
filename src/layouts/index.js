@@ -22,6 +22,28 @@ function BasicLayout(props) {
   const intl = useIntl();
   const [blockNumber, setBlockNumber] = useState('--');
   const [info, setInfo] = useState();
+  const [showGameRule, setShowGameRule] = useState(false);
+  const [showAssets, setShowAssets] = useState(false);
+  const [showBid, setShowBid] = useState(false);
+  const [showPayConfirm, setShowPayConfirm] = useState(false);
+  const [addValue, setAddValue] = useState(0);
+  const [finalBlock, setFinalBlock] = useState(0);
+  const active = info && info.goodsValue && info.goodsValue > 0 ? true : false;
+  const totalAsset = info && (Number(info.waspBalance) + info.asset + info.bid);
+  const currentPrice = info && info.status === 0 ? 0 : info && info.currentBidPrice;
+  const bid = info && info.status === 0 ? 0 : info && info.bid;
+  const status = info && info.status;
+  const [language, setLanguage] = useState();
+  const curLang = getLocale();
+  useEffect(() => {
+    if (!curLang.includes('zh')) {
+      setLanguage('中文');
+    } else {
+      setLanguage('English');
+    }
+  }, [curLang]);
+
+
   useEffect(() => {
     const func = async () => {
       await getFastWeb3();
@@ -29,6 +51,7 @@ function BasicLayout(props) {
     }
     func();
   }, []);
+  window.setLocale = setLocale;
 
   const address = props.selectedAccount ? props.selectedAccount.get('address') : undefined;
 
@@ -56,32 +79,7 @@ function BasicLayout(props) {
     }
   }, [props.networkId, address]);
 
-  let rank = [
-    {
-      rank: 1,
-      address: '0x4Cf0...7D9e',
-      pay: '15 WASP',
-      return: '100 WAN',
-    },
-    {
-      rank: 2,
-      address: '0x4Cf0...7D9e',
-      pay: '14 WASP',
-      return: '14 WASP',
-    },
-    {
-      rank: 3,
-      address: '0x4Cf0...7D9e',
-      pay: '10 WASP',
-      return: '10 WASP',
-    },
-    {
-      rank: 4,
-      address: '0x4Cf0...7D9e',
-      pay: '8 WASP',
-      return: '8 WASP',
-    },
-  ];
+  let rank = [];
 
   rank = !info ? [] : info.players.map((v, i) => {
     return {
@@ -103,19 +101,6 @@ function BasicLayout(props) {
     }
   });
 
-  const [showGameRule, setShowGameRule] = useState(false);
-  const [showAssets, setShowAssets] = useState(false);
-  const [showBid, setShowBid] = useState(false);
-  const [showPayConfirm, setShowPayConfirm] = useState(false);
-  const [addValue, setAddValue] = useState(0);
-  const [finalBlock, setFinalBlock] = useState(0);
-  const active = info && info.goodsValue && info.goodsValue > 0 ? true : false;
-  const totalAsset = info && (Number(info.waspBalance) + info.asset + info.bid);
-  const currentPrice = info && info.status === 0 ? 0 : info && info.currentBidPrice;
-  const bid = info && info.status === 0 ? 0 : info && info.bid;
-  const status = info && info.status;
-  // console.log('status', status);
-  // console.log('currentPrice', currentPrice, status !== 2 && info && info.currentBidPrice > 0);
 
   return (
     <Ground>
@@ -164,6 +149,13 @@ function BasicLayout(props) {
         }
 
         <Tab to="/" onClick={() => { setShowGameRule(true) }}>{intl.messages['gameRules']}</Tab>
+        <Language onClick={() => {
+          if (curLang.includes('zh')) {
+            setLocale('en-US', false);
+          } else {
+            setLocale('zh-CN', false);
+          }
+        }}>{language}</Language>
         {
           rpc
             ? <>
@@ -554,7 +546,7 @@ const Assets = styled.div`
   cursor: pointer;
   border-radius: 25px;
   height: 36px;
-  margin-left: auto;
+  margin-left: 20px;
   margin-right: 20px;
   /* border: 1px solid white; */
   margin-top: 12px;
@@ -564,6 +556,12 @@ const Assets = styled.div`
   line-height: 30px;
 
 `
+
+const Language = styled(Assets)`
+  margin-left: auto;
+  margin-right: 0px;
+  background-color: #4a87ab;
+`;
 
 const WalletBt = styled.div`
   border: 1px solid white;

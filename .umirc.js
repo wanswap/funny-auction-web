@@ -3,7 +3,7 @@ export default {
   antd: {},
   title: 'WASP Auction',
   locale: {
-    // default: 'en-US',
+    default: 'en-US',
     antd: true,
     baseNavigator: true,
     baseSeparator: '-',
