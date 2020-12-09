@@ -547,7 +547,7 @@ const Assets = styled.div`
   border-radius: 25px;
   height: 36px;
   margin-left: 20px;
-  margin-right: 20px;
+  margin-right: 10px;
   /* border: 1px solid white; */
   margin-top: 12px;
   padding: 3px 20px 2px 20px;
