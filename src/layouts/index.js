@@ -125,7 +125,11 @@ function BasicLayout(props) {
           : null
       }
       <GameRuleModal visible={showGameRule} onCancel={() => { setShowGameRule(false) }} />
-      <AssetsModal visible={showAssets} onCancel={() => { setShowAssets(false) }} waspBalance={info && info.waspBalance} asset={info && info.asset} bid={info && info.bid} />
+      <AssetsModal visible={showAssets} 
+        onCancel={() => { setShowAssets(false) }} 
+        waspBalance={info && info.waspBalance} 
+        asset={info && info.asset} bid={info && info.bid}
+        wallet={props.selectedWallet} chainId={props.networkId} />
       <BidModal visible={showBid}
         currentPrice={currentPrice}
         onCancel={() => { setShowBid(false) }} onOk={(value) => {
@@ -146,14 +150,14 @@ function BasicLayout(props) {
         </Logo>
         <Tab to="/" selected>{intl.messages['funnyAuction']}</Tab>
         {
-          status !== 2 && info && info.currentBidPrice > 0
+          status === 0 && info && info.currentBidPrice > 0
             ? <Tab to="/" onClick={() => {
               sc.settlement(props.selectedWallet, props.networkId).then((ret) => {
                 console.log('ret', ret);
                 message.success("Tx sent: " + ret);
               }).catch(err => {
                 console.log('err', err);
-                message.error(err);
+                message.error(err.message);
               })
             }} >{intl.messages['settlement']}</Tab>
             : null
@@ -322,7 +326,15 @@ const AssetsModal = (props) => {
           <Col span={8}>{intl.messages['claimable']}</Col>
           <Col span={10}>{props.asset} WASP</Col>
           <Col span={6}>
-            <SmallButton>{intl.messages['claim']}</SmallButton>
+            <SmallButton onClick={()=>{
+              sc.claim(props.wallet, props.chainId).then(ret=>{
+                console.log(ret);
+                message.success("tx sent"+ret);
+              }).catch(err=>{
+                console.log('err', err);
+                message.error(err.message);
+              })
+            }}>{intl.messages['claim']}</SmallButton>
           </Col>
         </Row>
         <Row gutter={[24, 24]}>
@@ -443,12 +455,12 @@ const PayConfirmModal = (props) => {
             props.onCancel();
           }).catch(err => {
             console.log('err', err);
-            message.error(err);
+            message.error(err.message);
             props.onCancel();
           })
         }).catch(err => {
           console.log(err);
-          message.error(err);
+          message.error(err.message);
         });
       }} style={{ marginTop: "40px" }}>{intl.messages['ok']}</MainButton>
       <MainButton onClick={props.onCancel} style={{ marginTop: "40px" }}>{intl.messages['cancel']}</MainButton>
