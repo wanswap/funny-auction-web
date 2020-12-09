@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState } from 'react';
 
 import styled, { keyframes } from 'styled-components';
 import { Link } from 'umi';
@@ -6,16 +6,16 @@ import { Wallet, getSelectedAccount, getSelectedAccountWallet, WalletButton } fr
 import "wan-web-wallet/index.css";
 import { withRouter } from 'umi';
 import { connect } from 'react-redux';
-import { getNodeUrl, isSwitchFinish, getFastWeb3 } from '../utils/web3switch.js';
-import { useIntl, getLocale } from 'umi';
-import { Modal, Input, Row, Col, Button, Tooltip, message } from 'antd';
+import { getNodeUrl, getFastWeb3 } from '../utils/web3switch.js';
+import { useIntl, getLocale, getAllLocales, setLocale } from 'umi';
+import { Modal, Input, Row, Col, Tooltip, message } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
-import Web3 from 'web3';
 import "./index.css";
 import * as multicall from '../utils/multicall';
 import * as sc from '../utils/sc';
 
 console.log('getLocale', getLocale());
+console.log('all locales', getAllLocales());
 
 function BasicLayout(props) {
   const [rpc, setRpc] = useState(undefined);
@@ -38,7 +38,7 @@ function BasicLayout(props) {
     }
     let timer;
     const getInfo = async () => {
-      let ret = await multicall.getFunnyAuctionInfo(getNodeUrl(), props.networkId, props.selectedAccount ? address : undefined);
+      let ret = await multicall.getFunnyAuctionInfo(getNodeUrl(), props.networkId, address);
       if (ret) {
         setBlockNumber(Number(ret.results.blockNumber.toString()));
         setInfo(ret.results.transformed);
@@ -114,8 +114,8 @@ function BasicLayout(props) {
   const currentPrice = info && info.status === 0 ? 0 : info && info.currentBidPrice;
   const bid = info && info.status === 0 ? 0 : info && info.bid;
   const status = info && info.status;
-  console.log('status', status);
-  console.log('currentPrice', currentPrice, status !== 2 && info && info.currentBidPrice > 0);
+  // console.log('status', status);
+  // console.log('currentPrice', currentPrice, status !== 2 && info && info.currentBidPrice > 0);
 
   return (
     <Ground>
@@ -125,9 +125,9 @@ function BasicLayout(props) {
           : null
       }
       <GameRuleModal visible={showGameRule} onCancel={() => { setShowGameRule(false) }} />
-      <AssetsModal visible={showAssets} 
-        onCancel={() => { setShowAssets(false) }} 
-        waspBalance={info && info.waspBalance} 
+      <AssetsModal visible={showAssets}
+        onCancel={() => { setShowAssets(false) }}
+        waspBalance={info && info.waspBalance}
         asset={info && info.asset} bid={info && info.bid}
         wallet={props.selectedWallet} chainId={props.networkId} />
       <BidModal visible={showBid}
@@ -143,7 +143,7 @@ function BasicLayout(props) {
         asset={info && info.asset} bid={bid} currentBidPrice={currentPrice}
         chainId={props.networkId}
         wallet={props.selectedWallet}
-        account={props.selectedAccount ? props.selectedAccount.get('address') : undefined} />
+        account={address} />
       <TopBar>
         <Logo>
           🏵
@@ -184,7 +184,11 @@ function BasicLayout(props) {
           ? intl.messages['currentPrice'] + (info ? info.currentBidPrice : 0) + " WASP"
           : null
       }</SmallTitle>
-      <MainButton disable={!active || status === 1} onClick={() => { active && status !== 1 ? setShowBid(true) : null }}>
+      <MainButton disable={!active || status === 1} onClick={() => {
+        if (active && status !== 1) {
+          setShowBid(true)
+        }
+      }}>
         {
           active
             ? (
@@ -305,6 +309,7 @@ const GameRuleModal = (props) => {
 
 const AssetsModal = (props) => {
   const intl = useIntl();
+  const [disable, setDisable] = useState(false);
   return (
     <StyledModal
       visible={props.visible}
@@ -326,13 +331,16 @@ const AssetsModal = (props) => {
           <Col span={8}>{intl.messages['claimable']}</Col>
           <Col span={10}>{props.asset} WASP</Col>
           <Col span={6}>
-            <SmallButton onClick={()=>{
-              sc.claim(props.wallet, props.chainId).then(ret=>{
+            <SmallButton disable={disable} onClick={() => {
+              setDisable(true);
+              sc.claim(props.wallet, props.chainId).then(ret => {
                 console.log(ret);
-                message.success("tx sent"+ret);
-              }).catch(err=>{
+                message.success("tx sent" + ret);
+                setDisable(false);
+              }).catch(err => {
                 console.log('err', err);
                 message.error(err.message);
+                setDisable(false);
               })
             }}>{intl.messages['claim']}</SmallButton>
           </Col>
@@ -410,6 +418,7 @@ const PayConfirmModal = (props) => {
   if (asset >= add) {
     asset = add;
   }
+  const [disable, setDisable] = useState(false);
 
   return (
     <StyledModal
@@ -443,20 +452,23 @@ const PayConfirmModal = (props) => {
           </Col>
         </Row>
       </GridField>
-      <MainButton onClick={() => {
+      <MainButton disable={disable} onClick={() => {
         if (!props.account) {
           message.info("Please select wallet first");
           return;
         }
+        setDisable(true);
         sc.approve(props.wallet, props.chainId, props.account).then((ret) => {
           sc.offer(props.wallet, props.chainId, Number(props.currentBidPrice) + Number(props.addValue)).then((ret) => {
             console.log('ret', ret);
             message.success("Tx sent: " + ret);
             props.onCancel();
+            setDisable(false);
           }).catch(err => {
             console.log('err', err);
             message.error(err.message);
             props.onCancel();
+            setDisable(false);
           })
         }).catch(err => {
           console.log(err);

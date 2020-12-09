@@ -6,7 +6,7 @@ export async function getFunnyAuctionInfo(rpc, chainId, account) {
     return undefined;
   }
 
-  console.debug('chainId', chainId);
+  // console.debug('chainId', chainId);
 
   const funnySc = scAddr.FUNNY_AUCTION_ADDR[Number(chainId).toString()];
   const waspToken = scAddr.WASP_ADDR[Number(chainId).toString()];
@@ -73,7 +73,7 @@ export async function getFunnyAuctionInfo(rpc, chainId, account) {
 
   try {
     let ret = await aggregate(calls, config);
-    console.debug('sc info', ret);
+    // console.debug('sc info', ret);
     return ret;
   } catch (error) {
     console.log('error', error);
