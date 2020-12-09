@@ -4,7 +4,7 @@ export default {
   liquidity: "Liquidity",
   gameRules: "Game Rules",
   myAssets: "My Assets",
-  auctionBidFor: "Auction Bid For",
+  auctionBidFor: "Bid For",
   currentPrice: "Current Price: ",
   startGame: "Start Game",
   lastRoundRank: "Last Round Rank",
