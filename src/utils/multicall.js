@@ -57,7 +57,7 @@ export async function getFunnyAuctionInfo(rpc, chainId, account) {
     calls.push({
       target: waspToken,
       call: ['balanceOf(address)(uint256)', account],
-      returns: [['waspBalance', val => (val / 10 ** 18 - 0.5).toFixed(0)]]
+      returns: [['waspBalance', val => Number(val) > 0 ? (val / 10 ** 18 - 0.5).toFixed(0) : 0]]
     });
     calls.push({
       target: funnySc,
@@ -73,7 +73,7 @@ export async function getFunnyAuctionInfo(rpc, chainId, account) {
 
   try {
     let ret = await aggregate(calls, config);
-    // console.debug('sc info', ret);
+    console.debug('sc info', ret);
     return ret;
   } catch (error) {
     console.log('error', error);
