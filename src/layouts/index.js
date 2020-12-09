@@ -511,7 +511,7 @@ const Ground = styled.div`
   background-size: 100% 100%;
   background-position: 50%;
   /* animation: ${RainbowLight} 20s linear infinite; */
-  height: 100%;
+  min-height: 100%;
   width: 100%;
   /* padding-bottom: 40px; */
 `;
