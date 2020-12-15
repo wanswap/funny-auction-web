@@ -7,24 +7,25 @@ $ npm run start
 
 ```
 
-# Game Rule
+# Auction Rule
 
-Auction of 100 WAN.
+Auction Rules 
+1) The top 1 bidder is the winner of a round. He pays the amount of $WASP to smart contract, and gets back the $WAN rewards. His $WASP will be burnt by the smart contract. 
 
-1) The top 1 player is the winner, pays the auction price, return goods value.
+2) The other bidders will get back their bidding amount of $WASP back with no loss after each round. 
 
-2) The second is the loser, pays the auction price, no return.
+3) In each round, if there’s no higher bid within XXX blocks (roughly XXX minutes/hours), the current highest bidder shall win the rewards of this round. 
 
-3) The third and subsequent players shall be ordinary participants, and all auction gold shall be returned without loss.
+4) Between each round, there’s a XXX (time) of cool down before next round of auction begins. 
 
-4) The player wins when there is no higher bid for 30 blocks.
+5) The bidded $WASP tokens are temporarily stored in the smart contract and can be claimed back at any time. 
 
-5) A cool down of 30 blocks after each round is completed.
+6) Every new round of auction will settle last round’s $WAN rewards.
 
-6) At the beginning of the next round of betting, the income of the previous round will be settled automatically.
+# Smart Contract
 
-7) Revenue is recorded in the smart contract and can be withdrawn at any time.
+https://github.com/wanswap/funny-auction-contracts
 
-8) Liquidity can be deposit into the pool and the liquidity can be withdrawn at any time.
+## Mainnet Depoly
 
-9) The liquidity withdrawal shall be returned in accordance with the current total amount of the pool and the proportion of the liquidity.
+contract address:    0xc41FC67fC40Fe08446159c54C11a4455d0c56be0
