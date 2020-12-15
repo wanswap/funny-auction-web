@@ -597,7 +597,7 @@ const Title = styled.div`
   margin-left: auto;
   margin-right: auto;
   text-align: center;
-  width: 200px;
+  width: 260px;
   margin-top: 20px;
   border-bottom: 1px solid #909018;
   /* box-shadow: 0px 3px 10px #0000002f; */
