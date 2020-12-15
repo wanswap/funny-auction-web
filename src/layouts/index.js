@@ -117,6 +117,7 @@ function BasicLayout(props) {
         wallet={props.selectedWallet} chainId={props.networkId} />
       <BidModal visible={showBid}
         currentPrice={currentPrice}
+        value={info ? info.goodsValue : '--'}
         onCancel={() => { setShowBid(false) }} onOk={(value) => {
           setAddValue(value);
           setShowBid(false);
@@ -165,7 +166,7 @@ function BasicLayout(props) {
             : null
         }
       </TopBar>
-      <Title>{intl.messages['auctionBidFor']}</Title>
+      <Title>{intl.messages['auctionBidFor'] + ' ' + (info ? info.goodsValue : '--') + ' WAN'}</Title>
       <Coin amount={info ? info.goodsValue : '--'} />
       <Circle>
         <p style={{ fontSize: "58px" }}>100</p>
@@ -362,7 +363,7 @@ const BidModal = (props) => {
       onCancel={props.onCancel}
       footer={null}
     >
-      <ModalTitle>{intl.messages['auctionBidFor']}</ModalTitle>
+      <ModalTitle>{intl.messages['auctionBidFor'] + ' ' + props.value + ' WAN'}</ModalTitle>
       <SmallTitle>{intl.messages['currentPrice'] + props.currentPrice + " WASP"}</SmallTitle>
       <GridField>
         <Row gutter={[24, 24]}>

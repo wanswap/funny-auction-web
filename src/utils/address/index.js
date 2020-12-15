@@ -1,6 +1,6 @@
 
 export const FUNNY_AUCTION_ADDR = {
-  '1' : '0xb942b11e22afbf69192eeeff03c517ef6c94d2ae',
+  '1' : '0xc41FC67fC40Fe08446159c54C11a4455d0c56be0',
   '3' : '0x79e7ee629603b47ce8e0852f6e0bcb7384f94184'
 }
 
