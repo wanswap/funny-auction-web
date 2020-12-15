@@ -648,7 +648,7 @@ const MainButton = styled.div`
   box-shadow: 0px 3px 10px #0000002f;
   cursor: ${props => props.disable ? "not-allowed" : "pointer"};
   :hover{
-    background-color: #eeffff;
+    background-color: #3f728e;
     box-shadow: 0px 3px 10px #ffff338f;
   }
 `;
@@ -686,7 +686,7 @@ const StyledModal = styled(Modal)`
   width: 600px!important;
   .ant-modal-content {
     border-radius: 15px;
-    background:rgba(189 239 218 / 90%);
+    background:rgb(189 239 218);
   }
 `;
 
