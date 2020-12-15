@@ -246,7 +246,6 @@ function BasicLayout(props) {
               <Cell>{intl.messages['rank']}</Cell>
               <Cell long>{intl.messages['address']}</Cell>
               <Cell long>{intl.messages['pay']}</Cell>
-              <Cell long>{intl.messages['return']}</Cell>
             </Header>
             {
               rank.map((v, i) => {
@@ -254,7 +253,6 @@ function BasicLayout(props) {
                   <Cell>{v.rank}</Cell>
                   <Cell long>{v.address}</Cell>
                   <Cell long>{v.pay + ' WASP'}</Cell>
-                  <Cell long>{v.return}</Cell>
                 </TableRow>);
               })
             }

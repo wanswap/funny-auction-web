@@ -11,7 +11,7 @@ export default {
   rank: "Rank",
   address: "Address",
   status: "Status",
-  pay: "Paid",
+  pay: "Bid",
   return: "Return",
   liquidity: "Liquidity",
   totalLiquidity: "Total Liquidity",
