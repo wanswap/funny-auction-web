@@ -125,7 +125,7 @@ function BasicLayout(props) {
         }} />
       <PayConfirmModal visible={showPayConfirm}
         onCancel={() => { setShowPayConfirm(false) }}
-        addValue={addValue} waspBalance={info && info.waspBalance}
+        addValue={Number(addValue)} waspBalance={info && info.waspBalance}
         asset={info && info.asset} bid={bid} currentBidPrice={currentPrice}
         chainId={props.networkId}
         wallet={props.selectedWallet}
@@ -252,7 +252,7 @@ function BasicLayout(props) {
                 return (<TableRow key={i}>
                   <Cell>{v.rank}</Cell>
                   <Cell long>{v.address}</Cell>
-                  <Cell long>{v.pay + ' WASP'}</Cell>
+                  <Cell long>{Number(v.pay).toFixed(0) + ' WASP'}</Cell>
                 </TableRow>);
               })
             }
@@ -376,17 +376,17 @@ const BidModal = (props) => {
         </Row>
         <Row gutter={[24, 24]}>
           <Col span={6}></Col>
-          <Col span={8}><SmallButton selected selected={select === "custom"} onClick={() => { setSelect('custom') }}>{intl.messages['custom']}</SmallButton></Col>
+          <Col span={8}><SmallButton selected selected={select === "custom"} onClick={() => { setSelect('custom') }}>{intl.messages['custom'] + ' +'}</SmallButton></Col>
           <Col span={8}>
             {
               select === "custom"
-                ? <SmallInput suffix={'WASP'} onChange={(e) => {
+                ? <SmallInput suffix={'WASP'} value={value} onChange={(e) => {
                   const v = e.target.value;
                   if (isNaN(v) || v < 0) {
                     return;
                   }
 
-                  setValue(v);
+                  setValue(Number(v).toFixed(0));
                 }} />
                 : null
             }
