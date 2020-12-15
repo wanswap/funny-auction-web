@@ -131,7 +131,7 @@ function BasicLayout(props) {
         account={address} />
       <TopBar>
         <Logo>
-          🏵
+          <img src={require('../assets/192x192_App_Icon.png')} width="48"/>
         </Logo>
         <Tab to="/" selected>{intl.messages['funnyAuction']}</Tab>
         {
@@ -159,7 +159,7 @@ function BasicLayout(props) {
         {
           rpc
             ? <>
-              <Assets onClick={() => { setShowAssets(true) }}>{intl.messages['myAssets'] + ': ' + totalAsset + ' WASP'}</Assets>
+              <Assets onClick={() => { setShowAssets(true) }}>{intl.messages['myAssets'] + ': ' + (totalAsset ? totalAsset : 'NaN') + ' WASP'}</Assets>
               <WalletBt><WalletButton /></WalletBt>
             </>
             : null
@@ -502,24 +502,26 @@ const RainbowLight = keyframes`
 `
 
 const Ground = styled.div`
-  background: linear-gradient(
+  background: url('img/hexagons.png'),-webkit-linear-gradient(45deg, rgba(16, 114, 189, 1) 0%, rgba(16, 114, 189, 1) 23%, rgba(2, 41, 97, 1) 48%, rgba(0, 4, 38, 1) 73%, rgba(0, 0, 21, 1) 100%);
+  /* background: linear-gradient(
     45deg,
     rgba(200, 255, 200, 1) 0%,
     rgba(158, 200, 155, 1) 50%,
     rgba(255, 203, 57, 1) 100%
   );
   background-size: 100% 100%;
-  background-position: 50%;
+  background-position: 50%; */
   /* animation: ${RainbowLight} 20s linear infinite; */
   min-height: 100%;
   width: 100%;
   /* padding-bottom: 40px; */
+  color: white;
 `;
 
 const TopBar = styled.div`
   width: 100%;
   height: 60px;
-  background-color: #00000020;
+  background-color: #00000030;
   margin: 0px;
   display:flex;
   justify-content: start;
@@ -528,7 +530,7 @@ const TopBar = styled.div`
 const Logo = styled.div`
   padding: 6px;
   margin-right: 10px;
-  font-size: 32px;
+  /* font-size: 32px; */
   margin-left: 10px;
 `;
 

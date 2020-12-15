@@ -9,4 +9,5 @@ export default {
     baseSeparator: '-',
     title: false,
   },
+  favicon: '/favicon.png',
 }
