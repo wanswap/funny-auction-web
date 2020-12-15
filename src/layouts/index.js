@@ -160,7 +160,7 @@ function BasicLayout(props) {
         {
           rpc
             ? <>
-              <Assets onClick={() => { setShowAssets(true) }}>{intl.messages['myAssets'] + ': ' + (totalAsset ? totalAsset : 'NaN') + ' WASP'}</Assets>
+              <Assets onClick={() => { setShowAssets(true) }}>{intl.messages['myAssets'] + ': ' + (totalAsset ? totalAsset : '0') + ' WASP'}</Assets>
               <WalletBt><WalletButton /></WalletBt>
             </>
             : null
@@ -315,7 +315,7 @@ const AssetsModal = (props) => {
       <GridField>
         <Row gutter={[24, 24]}>
           <Col span={8}>{intl.messages['walletBalance']}</Col>
-          <Col span={10}>{props.waspBalance} WASP</Col>
+          <Col span={10}>{Number(props.waspBalance) < 1 ? '0': props.waspBalance} WASP</Col>
           <Col span={6}></Col>
         </Row>
         <Row gutter={[24, 24]}>
