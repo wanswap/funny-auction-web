@@ -39,7 +39,7 @@ export async function getFunnyAuctionInfo(rpc, chainId, account) {
     {
       target: funnySc,
       call: ['currentBidPrice()(uint256)'],
-      returns: [['currentBidPrice', val => val / 10 ** 18]]
+      returns: [['currentBidPrice', val => Number((val / 10 ** 18).toFixed(0))]]
     },
     {
       target: funnySc,
