@@ -830,7 +830,7 @@ const SmallInput = styled(StyledInput)`
 `;
 
 const BlockNumber = styled.div`
-  position: absolute;
+  position: fixed;
   top: 97vh;
   left: 10px;
   font-size: 12px;
