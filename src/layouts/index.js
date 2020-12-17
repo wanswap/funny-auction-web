@@ -79,7 +79,7 @@ function BasicLayout(props) {
     const getHistory = async ()=>{
       let ret = await sc.history(props.networkId, goodsToken)
       if (ret) {
-        ret = ret.reverse().slice(0, 5);
+        ret = ret.reverse().slice(0, 10);
         let historyData = [];
         for (let i=0; i<ret.length; i++) {
           historyData.push({
