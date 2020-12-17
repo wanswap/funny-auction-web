@@ -13,7 +13,7 @@ export default {
   rank: "排名",
   address: "地址",
   status: "状态",
-  pay: "出价",
+  pay: "支付",
   return: "返还",
   liquidity: "流动性",
   totalLiquidity: "当前总流动性",

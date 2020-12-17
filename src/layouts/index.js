@@ -79,13 +79,14 @@ function BasicLayout(props) {
     const getHistory = async ()=>{
       let ret = await sc.history(props.networkId, goodsToken)
       if (ret) {
-        ret = ret.reverse();//.slice(0, 10);
+        ret = ret.reverse().slice(0, 5);
         let historyData = [];
         for (let i=0; i<ret.length; i++) {
           historyData.push({
             block: ret[i].blockNumber,
             addr: ret[i].returnValues.user.slice(0, 6) + '...' + ret[i].returnValues.user.slice(-4),
-            ret: ret[i].returnValues.value/10**18,
+            ret: (ret[i].returnValues.value/10**18).toFixed(0),
+            price: await sc.getHistoryPrice(ret[i].blockNumber, props.networkId, goodsToken),
           });
         }
         console.log('historyData', historyData);
@@ -137,6 +138,7 @@ function BasicLayout(props) {
         onCancel={() => { setShowAssets(false) }}
         waspBalance={info && info.waspBalance}
         asset={info && info.asset} bid={info && info.bid}
+        goodsToken={goodsToken}
         wallet={props.selectedWallet} chainId={props.networkId} />
       <BidModal visible={showBid}
         currentPrice={currentPrice}
@@ -288,6 +290,7 @@ function BasicLayout(props) {
       <Header>
         <Cell>{intl.messages['block']}</Cell>
         <Cell long>{intl.messages['address']}</Cell>
+        <Cell long>{intl.messages['pay']}</Cell>
         <Cell long>{intl.messages['return']}</Cell>
       </Header>
       {
@@ -295,6 +298,7 @@ function BasicLayout(props) {
           return (<TableRow key={i}>
             <Cell>{v.block}</Cell>
             <Cell long>{v.addr}</Cell>
+            <Cell long>{v.price + ' WASP'}</Cell>
             <Cell long>{Number(v.ret).toFixed(0) + ' ' + goodsToken}</Cell>
           </TableRow>);
         })
@@ -364,7 +368,7 @@ const AssetsModal = (props) => {
           <Col span={6}>
             <SmallButton disable={disable} onClick={() => {
               setDisable(true);
-              sc.claim(props.wallet, props.chainId).then(ret => {
+              sc.claim(props.wallet, props.chainId, props.goodsToken).then(ret => {
                 console.log(ret);
                 message.success("tx sent" + ret);
                 setDisable(false);
@@ -581,6 +585,8 @@ const Tab = styled(Link)`
   font-size: 22px;
   font-weight: ${props => props.selected ? "bold" : "normal"};
   color: ${props => props.selected ? "#ffffffff" : "#ffffffbb"};
+  background: ${props => props.selected ? "#ffffff21" : "#ffffff00"};
+  border-radius: 10px;
 `;
 
 const Assets = styled.div`

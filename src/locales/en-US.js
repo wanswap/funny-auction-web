@@ -13,7 +13,7 @@ export default {
   rank: "Rank",
   address: "Address",
   status: "Status",
-  pay: "Bid",
+  pay: "Paid",
   return: "Return",
   liquidity: "Liquidity",
   totalLiquidity: "Total Liquidity",
@@ -61,7 +61,7 @@ export default {
   losing: "Losing",
   settlement: "Settlement",
   liquidityEmpty: "Prize Insufficent",
-  history: "Auction History",
-  block: "Block Number",
+  history: "Win History",
+  block: "Block",
 
 };
