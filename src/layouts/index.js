@@ -35,6 +35,8 @@ function BasicLayout(props) {
   const status = info && info.status;
   const [language, setLanguage] = useState();
   const curLang = getLocale();
+  const [goodsToken, setGoodsToken] = useState('WAN');
+
   useEffect(() => {
     if (!curLang.includes('zh')) {
       setLanguage('中文');
@@ -61,7 +63,7 @@ function BasicLayout(props) {
     }
     let timer;
     const getInfo = async () => {
-      let ret = await multicall.getFunnyAuctionInfo(getNodeUrl(), props.networkId, address);
+      let ret = await multicall.getFunnyAuctionInfo(getNodeUrl(), props.networkId, address, goodsToken);
       if (ret) {
         setBlockNumber(Number(ret.results.blockNumber.toString()));
         setInfo(ret.results.transformed);
@@ -77,7 +79,7 @@ function BasicLayout(props) {
         clearInterval(timer);
       }
     }
-  }, [props.networkId, address]);
+  }, [props.networkId, address, goodsToken]);
 
   let rank = [];
 
@@ -97,7 +99,7 @@ function BasicLayout(props) {
     return {
       ...v,
       rank: i + 1,
-      return: returns + ((i === 0) ? ' WAN' : ' WASP')
+      return: returns + ((i === 0) ? (' ' + goodsToken) : ' WASP')
     }
   });
 
@@ -118,6 +120,7 @@ function BasicLayout(props) {
       <BidModal visible={showBid}
         currentPrice={currentPrice}
         value={info ? info.goodsValue : '--'}
+        goodsToken={goodsToken}
         onCancel={() => { setShowBid(false) }} onOk={(value) => {
           setAddValue(value);
           setShowBid(false);
@@ -129,16 +132,18 @@ function BasicLayout(props) {
         asset={info && info.asset} bid={bid} currentBidPrice={currentPrice}
         chainId={props.networkId}
         wallet={props.selectedWallet}
+        goodsToken={goodsToken}
         account={address} />
       <TopBar>
         <Logo>
           <img src={require('../assets/192x192_App_Icon.png')} width="48"/>
         </Logo>
-        <Tab to="/" selected>{intl.messages['funnyAuction']}</Tab>
+        <Tab to="/" selected={goodsToken === 'WAN'} onClick={() => { setGoodsToken('WAN') }}>{intl.messages['wanAuction']}</Tab>
+        <Tab to="/" selected={goodsToken === 'FNX'} onClick={() => { setGoodsToken('FNX') }}>{intl.messages['fnxAuction']}</Tab>
         {
           status === 0 && info && info.currentBidPrice > 0
             ? <Tab to="/" onClick={() => {
-              sc.settlement(props.selectedWallet, props.networkId).then((ret) => {
+              sc.settlement(props.selectedWallet, props.networkId, goodsToken).then((ret) => {
                 console.log('ret', ret);
                 message.success("Tx sent: " + ret);
               }).catch(err => {
@@ -148,8 +153,7 @@ function BasicLayout(props) {
             }} >{intl.messages['settlement']}</Tab>
             : null
         }
-
-        <Tab to="/" onClick={() => { setShowGameRule(true) }}>{intl.messages['gameRules']}</Tab>
+        <GameRule onClick={() => { setShowGameRule(true) }}>{intl.messages['gameRules']}</GameRule>
         <Language onClick={() => {
           if (curLang.includes('zh')) {
             setLocale('en-US', false);
@@ -166,8 +170,8 @@ function BasicLayout(props) {
             : null
         }
       </TopBar>
-      <Title>{intl.messages['auctionBidFor'] + ' ' + (info ? info.goodsValue : '--') + ' WAN'}</Title>
-      <Coin amount={info ? info.goodsValue : '--'} />
+      <Title>{intl.messages['auctionBidFor'] + ' ' + (info ? info.goodsValue : '--') + (' ' + goodsToken)}</Title>
+      <Coin amount={info ? info.goodsValue : '--'} goodsToken={goodsToken}/>
       <Circle>
         <p style={{ fontSize: "58px" }}>100</p>
         <p style={{ fontSize: "20px" }}>Wan Coins</p>
@@ -361,7 +365,7 @@ const BidModal = (props) => {
       onCancel={props.onCancel}
       footer={null}
     >
-      <ModalTitle>{intl.messages['auctionBidFor'] + ' ' + props.value + ' WAN'}</ModalTitle>
+      <ModalTitle>{intl.messages['auctionBidFor'] + ' ' + props.value + ' ' + props.goodsToken}</ModalTitle>
       <SmallTitle>{intl.messages['currentPrice'] + props.currentPrice + " WASP"}</SmallTitle>
       <GridField>
         <Row gutter={[24, 24]}>
@@ -449,8 +453,8 @@ const PayConfirmModal = (props) => {
           return;
         }
         setDisable(true);
-        sc.approve(props.wallet, props.chainId, props.account).then((ret) => {
-          sc.offer(props.wallet, props.chainId, Number(props.currentBidPrice) + Number(props.addValue)).then((ret) => {
+        sc.approve(props.wallet, props.chainId, props.account, props.goodsToken).then((ret) => {
+          sc.offer(props.wallet, props.chainId, Number(props.currentBidPrice) + Number(props.addValue), props.goodsToken).then((ret) => {
             console.log('ret', ret);
             message.success("Tx sent: " + ret);
             props.onCancel();
@@ -481,7 +485,7 @@ const Coin = (props) => {
           <div className='shape_l'></div>
           <div className='shape_r'></div>
           <span className='top'></span>
-          <span className='bottom'>WAN</span>
+          <span className='bottom'>{props.goodsToken}</span>
         </div>
       </div>
       <div className='shadow'></div>
@@ -559,9 +563,13 @@ const Assets = styled.div`
 `
 
 const Language = styled(Assets)`
+  background-color: #4a87ab;
+`;
+
+const GameRule = styled(Assets)`
   margin-left: auto;
   margin-right: 0px;
-  background-color: #4a87ab;
+  background-color: #4aab6b;
 `;
 
 const WalletBt = styled.div`

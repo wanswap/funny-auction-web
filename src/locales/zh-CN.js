@@ -1,6 +1,8 @@
 export default {
   WELCOME_TO_UMI_WORLD: '{name}，欢迎光临umi的世界',
   funnyAuction: "WASP竞拍",
+  wanAuction: "WAN拍卖",
+  fnxAuction: "FNX拍卖",
   liquidity: "流动性",
   gameRules: "拍卖规则",
   myAssets: "我的资产: ",

@@ -1,7 +1,13 @@
 
 export const FUNNY_AUCTION_ADDR = {
-  '1' : '0xc41fc67fc40fe08446159c54c11a4455d0c56be0',
-  '3' : '0x79e7ee629603b47ce8e0852f6e0bcb7384f94184'
+  'WAN': {
+    '1' : '0xc41fc67fc40fe08446159c54c11a4455d0c56be0',
+    '3' : '0x79e7ee629603b47ce8e0852f6e0bcb7384f94184'
+  },
+  'FNX': {
+    '1' : '0xc41fc67fc40fe08446159c54c11a4455d0c56be0',
+    '3' : '0xf138a638499dF509EC91B28C4B0afE3E1e3EA29A'
+  }
 }
 
 export const MULTI_CALL_ADDR = {

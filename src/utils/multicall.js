@@ -1,14 +1,14 @@
 import { aggregate } from '@makerdao/multicall';
 import * as scAddr from './address/index';
 
-export async function getFunnyAuctionInfo(rpc, chainId, account) {
+export async function getFunnyAuctionInfo(rpc, chainId, account, goodsToken) {
   if (!rpc || !chainId) {
     return undefined;
   }
 
   // console.debug('chainId', chainId);
 
-  const funnySc = scAddr.FUNNY_AUCTION_ADDR[Number(chainId).toString()];
+  const funnySc = scAddr.FUNNY_AUCTION_ADDR[goodsToken][Number(chainId).toString()];
   const waspToken = scAddr.WASP_ADDR[Number(chainId).toString()];
   const config = {
     rpcUrl: rpc,
