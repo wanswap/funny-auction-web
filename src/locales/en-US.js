@@ -46,7 +46,7 @@ export default {
   payFromClaimable: "Claimable pay:",
   payFromWallet: "Wallet pay:",
   payFromHelp1: "When there is a claimable amount in the contract, it is the priority to deduct the claimable amount",
-  payFromHelp2: "合If the amount available in the contract is insufficient, deduct the remaining part from the wallet",
+  payFromHelp2: "If the amount available in the contract is insufficient, deduct the remaining part from the wallet",
   timeLeft: "Time Left",
   block: "Blocks",
   addBid: "Raise bid",
@@ -61,4 +61,7 @@ export default {
   losing: "Losing",
   settlement: "Settlement",
   liquidityEmpty: "Prize Insufficent",
+  history: "Auction History",
+  block: "Block Number",
+
 };

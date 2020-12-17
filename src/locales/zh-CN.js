@@ -62,4 +62,6 @@ export default {
   losing: "即将失败",
   settlement: "结算",
   liquidityEmpty: "资金池不足",
+  history: "获胜记录",
+  block: "块高度",
 };

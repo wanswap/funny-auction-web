@@ -36,6 +36,7 @@ function BasicLayout(props) {
   const [language, setLanguage] = useState();
   const curLang = getLocale();
   const [goodsToken, setGoodsToken] = useState('WAN');
+  const [history, setHistory] = useState([]);
 
   useEffect(() => {
     if (!curLang.includes('zh')) {
@@ -73,6 +74,26 @@ function BasicLayout(props) {
     }
 
     getInfo();
+
+
+    const getHistory = async ()=>{
+      let ret = await sc.history(props.networkId, goodsToken)
+      if (ret) {
+        ret = ret.reverse().slice(0, 10);
+        let historyData = [];
+        for (let i=0; i<ret.length; i++) {
+          historyData.push({
+            block: ret[i].blockNumber,
+            addr: ret[i].returnValues.user.slice(0, 6) + '...' + ret[i].returnValues.user.slice(-4),
+            ret: ret[i].returnValues.value/10**18,
+          });
+        }
+        console.log('historyData', historyData);
+        setHistory(historyData);
+      }
+    }
+
+    getHistory();
 
     return () => {
       if (timer) {
@@ -263,7 +284,22 @@ function BasicLayout(props) {
           </>
           : null
       }
-
+      <Title>{intl.messages['history']}</Title>
+      <Header>
+        <Cell>{intl.messages['block']}</Cell>
+        <Cell long>{intl.messages['address']}</Cell>
+        <Cell long>{intl.messages['return']}</Cell>
+      </Header>
+      {
+        history.map((v, i) => {
+          return (<TableRow key={i}>
+            <Cell>{v.block}</Cell>
+            <Cell long>{v.addr}</Cell>
+            <Cell long>{Number(v.ret).toFixed(0) + ' ' + goodsToken}</Cell>
+          </TableRow>);
+        })
+      }
+      <Title></Title>
       <BlockNumber>🔵{' ' + blockNumber}</BlockNumber>
     </Ground>
   );

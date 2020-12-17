@@ -106,3 +106,12 @@ export const offer = async (wallet, chainId, amount, goodsToken) => {
   console.log('txHash', txHash);
   return txHash;
 }
+
+export const history = async (chainId, goodsToken) => {
+  const web3 = getWeb3();
+  const funnySc = scAddr.FUNNY_AUCTION_ADDR[goodsToken][Number(chainId).toString()];
+  const sc = new web3.eth.Contract(aucAbi, funnySc);
+  const ret = await sc.getPastEvents('Prize', {fromBlock: 10000000, toBlock: 'latest'});
+  console.debug('history', ret);
+  return ret;
+}
