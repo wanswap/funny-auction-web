@@ -119,9 +119,9 @@ export const history = async (chainId, goodsToken) => {
 export const getHistoryPrice = async (block, chainId, goodsToken) => {
   const web3 = getWeb3();
   const funnySc = scAddr.FUNNY_AUCTION_ADDR[goodsToken][Number(chainId).toString()];
-  console.log('funnySc', funnySc, chainId, goodsToken);
+  // console.log('funnySc', funnySc, chainId, goodsToken);
   const sc = new web3.eth.Contract(aucAbi, funnySc);
   const ret = await sc.methods.currentBidPrice().call(undefined, block-1);
-  console.log('getHistoryPrice', block, ret/10**18);
+  // console.log('getHistoryPrice', block, ret/10**18);
   return (ret / 10**18).toFixed(0);
 }

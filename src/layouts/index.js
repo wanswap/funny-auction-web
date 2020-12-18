@@ -70,11 +70,10 @@ function BasicLayout(props) {
         setInfo(ret.results.transformed);
         setFinalBlock(ret.results.blockNumber - ret.results.transformed.lastOfferBlock);
       }
-      timer = setTimeout(getInfo, 10000);
     }
 
     getInfo();
-
+    timer = setInterval(getInfo, 10000);
 
     const getHistory = async ()=>{
       let ret = await sc.history(props.networkId, goodsToken)
@@ -89,7 +88,7 @@ function BasicLayout(props) {
             price: await sc.getHistoryPrice(ret[i].blockNumber, props.networkId, goodsToken),
           });
         }
-        console.log('historyData', historyData);
+        // console.log('historyData', historyData);
         setHistory(historyData);
       }
     }
